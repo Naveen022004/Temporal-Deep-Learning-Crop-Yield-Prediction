@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated data
+/data/raw/*
+!/data/raw/.gitkeep
+/data/processed/*
+!/data/processed/.gitkeep
+*.csv
+*.zip
+
+# Models and results
+/models/*
+!/models/.gitkeep
+/results/predictions/*
+!/results/predictions/.gitkeep
+/results/figures/*
+!/results/figures/.gitkeep
+*.keras
+*.h5
+*.joblib
