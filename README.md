@@ -1,52 +1,121 @@
-# Temporal Deep Learning for Crop Yield Prediction Using Real Agricultural and Environmental Data
+# Temporal Deep Learning for Crop Yield Prediction
 
 ## B.Tech CSE Project
 
-This project predicts crop yield using a temporal deep-learning model (LSTM) and **real publicly available data**.
+A reproducible machine-learning project that predicts crop yield from historical agricultural records and environmental data. The project compares a temporal LSTM model with Ridge Regression because the available annual dataset is relatively small.
+
+## Project Architecture
+
+```text
+FAOSTAT Crop Yield + NASA POWER Environmental Data
+                    |
+                    v
+              data/raw/
+                    |
+                    v
+          Preprocessing and Cleaning
+                    |
+                    v
+            Feature Engineering
+                    |
+                    v
+           5-Year Temporal Sequences
+                    |
+          +---------+---------+
+          |                   |
+          v                   v
+         LSTM              Ridge Baseline
+          |                   |
+          +---------+---------+
+                    v
+              Evaluation
+                    |
+          +---------+---------+
+          v                   v
+       models/            results/
+```
+
+## Repository Structure
+
+```text
+.
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── Temporal_Crop_Yield_Prediction_Real_Data.ipynb
+├── nasa_power_environment.py
+├── src/
+│   ├── __init__.py
+│   ├── nasa_power_environment.py
+│   ├── preprocessing.py
+│   ├── feature_engineering.py
+│   ├── train_model.py
+│   └── evaluate_model.py
+├── data/
+│   ├── raw/
+│   └── processed/
+├── models/
+├── results/
+│   ├── predictions/
+│   └── figures/
+└── docs/
+    └── project_report.md
+```
 
 ## Data Sources
 
-### 1. FAOSTAT – Crop Production and Yield
-Official Food and Agriculture Organization statistics.
+### FAOSTAT Crop Production and Yield
+The project uses publicly available agricultural statistics and filters historical records for India, including Wheat, Rice, and Maize.
 
-Notebook download URL:
-`https://bulks-faostat.fao.org/production/Production_Crops_Livestock_E_All_Data_(Normalized).zip`
-
-The notebook filters real records for **India** and uses:
-- Wheat
-- Rice
-- Maize
-- Historical annual yield
-
-### 2. NASA POWER – Environmental Data
-Real environmental observations are downloaded automatically using the NASA POWER API:
+### NASA POWER Environmental Data
+Environmental variables include:
 - Temperature (T2M)
 - Corrected precipitation (PRECTOTCORR)
 - Relative humidity (RH2M)
 - Solar radiation (ALLSKY_SFC_SW_DWN)
 
-### 3. Optional Satellite Data – MODIS NDVI
-For an advanced extension, the project can use:
-`MODIS/061/MOD13Q1`
+### Optional Satellite Extension
+MODIS NDVI can be integrated through Google Earth Engine as an advanced extension.
 
-MODIS NDVI extraction requires Google Earth Engine authentication. The core project intentionally runs without credentials using real FAOSTAT and NASA POWER data.
+## Machine-Learning Workflow
 
-## Project Workflow
+1. Download agricultural and environmental data.
+2. Clean missing and invalid values.
+3. Encode crop categories and scale numerical features.
+4. Build consecutive 5-year temporal sequences.
+5. Split training and test data chronologically.
+6. Train an LSTM model with regularization and early stopping.
+7. Train a Ridge Regression baseline.
+8. Inverse-transform target predictions before evaluation.
+9. Compare MAE, RMSE, and R².
+10. Save predictions, figures, and trained models in their dedicated directories.
 
-FAOSTAT Crop Yield + NASA POWER Environment
-→ Data Cleaning
-→ Feature Encoding
-→ 5-Year Temporal Sequences
-→ LSTM
-→ Crop Yield Prediction
-→ MAE, RMSE and R² Evaluation
+## Installation
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Run in Google Colab
 
-Open `Temporal_Crop_Yield_Prediction_Real_Data.ipynb` in Google Colab and select **Runtime → Run all**.
+Open `Temporal_Crop_Yield_Prediction_Real_Data.ipynb` and select **Runtime → Run all**. The notebook downloads the required real data automatically.
 
-The notebook automatically downloads the required real datasets; no local dataset upload is required.
+## Evaluation Metrics
 
-## Academic Note
+- **MAE**: Average absolute prediction error.
+- **RMSE**: Penalizes larger prediction errors.
+- **R²**: Measures performance relative to predicting the target mean.
 
-This implementation is suitable for a B.Tech student project because it uses real sources, reproducible data acquisition, temporal feature engineering and an LSTM model. Results should be reported as experimental results and not as production agricultural forecasts.
+A negative R² means the evaluated model performs worse than a mean-prediction baseline.
+
+## Limitations
+
+Annual national-level agricultural data provides a limited number of temporal samples. Therefore, results should be treated as experimental academic results rather than production agricultural forecasts.
+
+## Future Improvements
+
+- Add district-level crop data.
+- Add soil and irrigation variables.
+- Integrate MODIS NDVI.
+- Use monthly or seasonal environmental features.
+- Evaluate additional models such as Random Forest, XGBoost, and GRU.
