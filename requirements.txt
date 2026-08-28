@@ -1,0 +1,7 @@
+numpy>=1.26
+pandas>=2.0
+requests>=2.31
+scikit-learn>=1.4
+tensorflow>=2.16
+matplotlib>=3.8
+jupyter>=1.0
