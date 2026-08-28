@@ -1,35 +1,55 @@
-import numpy as np
+"""Model construction and training utilities.
+
+The defaults intentionally mirror the Colab notebook so refactoring does not
+change the experiment configuration or expected outcomes.
+"""
 from tensorflow.keras import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.layers import Input, LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.regularizers import l2
+from tensorflow.keras.optimizers import Adam
 from sklearn.linear_model import Ridge
 
 
 def build_lstm(input_shape):
-    model = Sequential([
-        LSTM(32, input_shape=input_shape, kernel_regularizer=l2(1e-4)),
-        Dropout(0.2),
-        Dense(16, activation="relu", kernel_regularizer=l2(1e-4)),
+    return Sequential([
+        Input(shape=input_shape),
+        LSTM(16, dropout=0.10, recurrent_dropout=0.0, kernel_regularizer=l2(1e-4)),
+        Dense(8, activation="relu", kernel_regularizer=l2(1e-4)),
+        Dropout(0.10),
         Dense(1),
     ])
-    model.compile(optimizer="adam", loss="huber", metrics=["mae"])
+
+
+def compile_lstm(model):
+    model.compile(
+        optimizer=Adam(learning_rate=3e-4, clipnorm=1.0),
+        loss="huber",
+        metrics=["mae"],
+    )
     return model
 
 
-def train_lstm(X_train, y_train, X_val=None, y_val=None, epochs=150, batch_size=8):
-    model = build_lstm(X_train.shape[1:])
-    callbacks = [
-        EarlyStopping(monitor="val_loss" if X_val is not None else "loss", patience=20, restore_best_weights=True),
-        ReduceLROnPlateau(monitor="val_loss" if X_val is not None else "loss", patience=8, factor=0.5),
+def make_callbacks():
+    return [
+        EarlyStopping(monitor="val_loss", patience=30, restore_best_weights=True, min_delta=1e-4),
+        ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=10, min_lr=1e-5),
     ]
-    validation_data = (X_val, y_val) if X_val is not None else None
-    history = model.fit(X_train, y_train, validation_data=validation_data, epochs=epochs,
-                        batch_size=batch_size, shuffle=False, verbose=1, callbacks=callbacks)
-    return model, history
 
 
-def train_ridge_baseline(X_train, y_train, alpha=1.0):
+def train_lstm(model, X_fit, y_fit, X_val, y_val, epochs=300, batch_size=8):
+    return model.fit(
+        X_fit, y_fit,
+        validation_data=(X_val, y_val),
+        epochs=epochs,
+        batch_size=min(batch_size, len(X_fit)),
+        verbose=1,
+        shuffle=False,
+        callbacks=make_callbacks(),
+    )
+
+
+def train_ridge_baseline(X_train, y_train, alpha=10.0):
     model = Ridge(alpha=alpha)
     model.fit(X_train.reshape(len(X_train), -1), y_train)
     return model
